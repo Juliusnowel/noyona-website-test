@@ -1,9 +1,198 @@
+<style>
+	/* Checkout layout shell */
+.checkout-shell {
+    padding: 2.5rem 0 4rem;
+}
+
+.checkout-card {
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    padding: 2rem 2.5rem 2.5rem;
+}
+
+.checkout-title {
+    margin: 0 0 0.25rem;
+    font-weight: 700;
+    color: #fd593c;
+}
+
+.checkout-subtitle {
+    margin: 0 0 1.5rem;
+    color: #777;
+}
+
+/* GCash QR modal */
+.gcash-qr-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+}
+
+.gcash-qr-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+}
+
+.gcash-qr-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 1.75rem 2rem 2rem;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    text-align: center;
+}
+
+.gcash-qr-title {
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    color: #fd593c;
+}
+
+.gcash-qr-text {
+    margin: 0 0 1.25rem;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.gcash-qr-image-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    border-radius: 16px;
+    background: #f7f7f7;
+}
+
+.gcash-qr-image-wrap img {
+    max-width: 260px;
+    height: auto;
+    display: block;
+}
+
+.gcash-qr-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    border: none;
+    background: transparent;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #999;
+}
+
+.gcash-qr-close:hover {
+    color: #fd593c;
+}
+
+/* optional: prevent background scroll while modal is open */
+body.gcash-qr-open {
+    overflow: hidden;
+}
+
+@media (max-width: 575.98px) {
+    .checkout-card {
+        padding: 1.5rem 1.25rem 2rem;
+    }
+}
+ 
+</style>
+
 <!-- wp:template-part {"slug":"checkout-header","tagName":"header"} /-->
-<!-- wp:woocommerce/page-content-wrapper {"page":"checkout"} -->
-<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
-<main class="wp-block-group">
-	<!-- wp:woocommerce/store-notices /-->
-	<!-- wp:post-content {"align":"wide"} /-->
+
+<!-- wp:group {"tagName":"main","className":"checkout-shell","layout":{"type":"constrained"}} -->
+<main class="wp-block-group checkout-shell">
+
+    <!-- wp:woocommerce/store-notices /-->
+
+    <!-- wp:group {"className":"checkout-card"} -->
+    <div class="wp-block-group checkout-card">
+
+        <!-- wp:heading {"level":2,"className":"checkout-title"} -->
+        <h2 class="checkout-title">Checkout</h2>
+        <!-- /wp:heading -->
+
+        <!-- wp:paragraph {"className":"checkout-subtitle"} -->
+        <p class="checkout-subtitle">Review your order and choose your payment method.</p>
+        <!-- /wp:paragraph -->
+
+        <!-- wp:shortcode -->
+        [woocommerce_checkout]
+        <!-- /wp:shortcode -->
+
+    </div>
+    <!-- /wp:group -->
+
+    <!-- wp:html -->
+    <div id="gcash-qr-modal" class="gcash-qr-modal" hidden>
+        <div class="gcash-qr-backdrop"></div>
+        <div class="gcash-qr-panel">
+            <button type="button" class="gcash-qr-close" aria-label="Close">&times;</button>
+            <h3 class="gcash-qr-title">Pay with GCash</h3>
+            <p class="gcash-qr-text">
+                Scan this QR code using your GCash app to complete your payment.
+            </p>
+            <div class="gcash-qr-image-wrap">
+                <!-- Replace src with your real PayMongo GCash QR URL -->
+                <img src="/wp-content/themes/woocom-ct/assets/images/gcash-qr.jpg"
+                     alt="GCash PayMongo QR code">
+            </div>
+        </div>
+    </div>
+    <!-- /wp:html -->
+
+    <!-- wp:html -->
+    <script>
+    (function() {
+        // Assumes the GCash gateway ID is "paymongo_gcash".
+        // If your plugin uses a different slug, update this value.
+        var GCASH_METHOD_VALUE = 'paymongo_gcash';
+
+        var modal   = document.getElementById('gcash-qr-modal');
+        if (!modal) return;
+
+        var closeBtn = modal.querySelector('.gcash-qr-close');
+        var backdrop = modal.querySelector('.gcash-qr-backdrop');
+
+        function openModal() {
+            modal.hidden = false;
+            document.body.classList.add('gcash-qr-open');
+        }
+
+        function closeModal() {
+            modal.hidden = true;
+            document.body.classList.remove('gcash-qr-open');
+        }
+
+        document.addEventListener('change', function(e) {
+            if (!e.target.matches('input[name="payment_method"]')) return;
+
+            if (e.target.value === GCASH_METHOD_VALUE) {
+                openModal();
+            } else {
+                // closing on switching to another payment
+                closeModal();
+            }
+        });
+
+        if (closeBtn)  closeBtn.addEventListener('click', closeModal);
+        if (backdrop)  backdrop.addEventListener('click', closeModal);
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+    })();
+    </script>
+    <!-- /wp:html -->
+
 </main>
 <!-- /wp:group -->
-<!-- /wp:woocommerce/page-content-wrapper -->
